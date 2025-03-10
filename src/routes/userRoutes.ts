@@ -5,11 +5,12 @@ import {
   deleteUser,
   updateUser,
 } from "../controllers/usersController.js";
-import { signUp } from "../controllers/authController.js";
+import { signUp, logIn } from "../controllers/authController.js";
 
 const router = Router();
 
 router.post("/signup", signUp);
+router.post("/login", logIn);
 
 router.route("/").get(getAllUsers);
 router.route("/:id").get(getUser).delete(deleteUser).patch(updateUser);

@@ -1,6 +1,5 @@
 import { catchAsync } from "../safeGuard/catchAsync.js";
 import User from "../models/userModel.js";
-import AppError from "../safeGuard/globalErrorCenter.js";
 
 const createUser = catchAsync(async (req, res) => {
   const userObj = { ...req.body };
@@ -12,11 +11,8 @@ const createUser = catchAsync(async (req, res) => {
   });
 });
 
-const getAllUsers = catchAsync(async (_, res, next) => {
+const getAllUsers = catchAsync(async (_, res) => {
   const users = await User.find();
-
-  if (users.length === 0)
-    return next(new AppError("There are no users yet", 404));
 
   res.status(200).json({
     status: "success",

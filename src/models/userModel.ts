@@ -2,16 +2,18 @@ import mongoose, { Document, Model } from "mongoose";
 import validator from "validator";
 import { compare, hash } from "bcryptjs";
 
-interface UserSchema extends Document {
+export interface UserSchema extends Document {
   name: string;
   email: string;
   photo?: string | null;
   password: string;
   confirmPassword: string;
+  passwordChangedAt?: Date;
   isValidPassword(
     candidatePassword: string,
     userPassword: string
   ): Promise<boolean>;
+  passwordChangedAfter(JWTTimestamp: number): boolean;
 }
 
 const userSchema = new mongoose.Schema<UserSchema>({
@@ -54,6 +56,7 @@ const userSchema = new mongoose.Schema<UserSchema>({
       message: "Passwords do not match",
     },
   },
+  passwordChangedAt: Date,
 });
 
 userSchema.pre<UserSchema>("save", async function (next) {
@@ -70,6 +73,18 @@ userSchema.methods["isValidPassword"] = async function (
   userPassword: string
 ): Promise<boolean> {
   return await compare(candidatePassword, userPassword);
+};
+
+userSchema.methods["passwordChangedAfter"] = function (JWTExpires: number): boolean {
+  if (this["passwordChangedAt"]) {
+    const lastPasswordChange = parseInt(
+      (this["passwordChangedAt"].getTime() / 1000).toString(),
+      10
+    );
+
+    return JWTExpires < lastPasswordChange;
+  }
+  return false;
 };
 
 const User: Model<UserSchema> = mongoose.model("User", userSchema);

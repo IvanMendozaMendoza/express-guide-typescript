@@ -2,6 +2,8 @@ import { Request, Response, NextFunction } from "express";
 import { CastError } from "mongoose";
 import AppError from "./globalErrorCenter.js";
 
+// ############################################
+
 const handleCastError = (err: CastError) => {
   const msg = `Invalid ${err.path}: ${err.value}`;
   return new AppError(msg, 400);
@@ -22,6 +24,15 @@ const handleValidationError = (err: AppError) => {
 
   return new AppError(`Invalid input data: ${msg}`, 422);
 };
+
+const handleInvalidJWT = () =>
+  new AppError("Invalid Token. Please log in again.", 401);
+
+const handleExpiredJWT = () =>
+  new AppError("Expired Token. Please log in again.", 401);
+
+// ##############################################
+
 const sendDevError = (err: AppError, res: Response) => {
   res.status(err.statusCode).json({
     status: err.status,
@@ -66,6 +77,10 @@ const globalErrorHandler = (
     if (err["code"] === 11000) error = handleDuplicateKeysError(error);
 
     if (err["name"] === "ValidationError") error = handleValidationError(error);
+
+    if (err["name"] === "JsonWebTokenError") error = handleInvalidJWT();
+
+    if (err["name"] === "TokenExpiredError") error = handleExpiredJWT();
 
     sendProdError(error, res);
   }

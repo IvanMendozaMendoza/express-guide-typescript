@@ -1,4 +1,4 @@
-type statCode = 400 | 401 | 402 | 403 | 404 | 422;
+type statCode = 400 | 401 | 402 | 403 | 404 | 422 | 500;
 
 class AppError extends Error {
   public statusCode: statCode;

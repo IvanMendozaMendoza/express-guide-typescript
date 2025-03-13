@@ -50,4 +50,12 @@ const deleteUser = catchAsync(async (req, res) => {
     user: null,
   });
 });
-export { createUser, getAllUsers, getUser, deleteUser, updateUser };
+
+
+export {
+  createUser,
+  getAllUsers,
+  getUser,
+  deleteUser,
+  updateUser,
+};

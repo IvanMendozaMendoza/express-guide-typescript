@@ -4,6 +4,7 @@ import { compare, hash } from "bcryptjs";
 
 export interface UserSchema extends Document {
   name: string;
+  role: string;
   email: string;
   photo?: string | null;
   password: string;
@@ -33,6 +34,11 @@ const userSchema = new mongoose.Schema<UserSchema>({
   },
   photo: {
     type: String,
+  },
+  role: {
+    type: String,
+    enum: ['user', 'admin', 'guide', 'lead-guide'],
+    required: true,
   },
   password: {
     type: String,

@@ -1,17 +1,18 @@
 import User from "../models/userModel.js";
 import { catchAsync } from "../safeGuard/catchAsync.js";
 import AppError from "../safeGuard/globalErrorCenter.js";
-import { sendToken, decodeToken } from "../safeGuard/jtwHandler.js";
+import { createToken, decodeToken } from "../safeGuard/jtwHandler.js";
 
 const signUp = catchAsync(async (req, res) => {
   const user = await User.create({
     name: req.body.name,
     email: req.body.email,
+    role: req.body.role,
     password: req.body.password,
     confirmPassword: req.body.confirmPassword,
   });
 
-  const token = sendToken(user["_id"] as string);
+  const token = createToken(user["_id"] as string);
 
   res.setHeader("Authorization", `Bearer ${token}`);
 
@@ -33,7 +34,18 @@ const logIn = catchAsync(async (req, res, next) => {
   if (!user || !user.isValidPassword(password, user["password"]))
     return next(new AppError("Incorrect email or password", 404));
 
-  const token = sendToken(user["_id"] as string);
+  const token = createToken(user["_id"] as string);
+
+  const cookieOptions = {
+    httpOnly: true,
+    secure: false,
+    sameSite: 'strict',
+    maxAge: 7 * (24 * 60 * 60 * 1000), // 7 day
+  }
+  
+  if(process.env['NODE_ENV'] === 'production') cookieOptions.secure = true;
+
+  res.cookie('jwt', cookieOptions)
 
   res.setHeader("Authorization", `Bearer ${token}`);
 
@@ -95,4 +107,16 @@ const protectRoute = catchAsync(async (req, _, next) => {
 
   next();
 });
-export { signUp, logIn, protectRoute };
+
+const restrictTo = (...roles: string[]) =>
+  catchAsync(async (req, _, next) => {
+    
+    if (!roles.includes(req?.user?.role as string)) {
+      return next(
+        new AppError("you dont have permission to perform this action", 401)
+      );
+    }
+
+    next();
+  });
+export { signUp, logIn, protectRoute, restrictTo };

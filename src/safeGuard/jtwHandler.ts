@@ -1,6 +1,6 @@
 import jwt, { JwtPayload } from "jsonwebtoken";
 
-const sendToken = (userId: string) => {
+const createToken = (userId: string) => {
   const EXPIRES_IN = process.env["JWT_EXPIRATION"] as string;
 
   const token = jwt.sign({ id: userId }, process.env["JWT_SECRET"] as string, {
@@ -19,4 +19,4 @@ const decodeToken = (token: string): Promise<DecodedToken> =>
       resolve(decoded as DecodedToken);
     });
   });
-export { sendToken, decodeToken };
+export { createToken, decodeToken };

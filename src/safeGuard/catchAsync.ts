@@ -7,6 +7,7 @@ interface IRequest extends Request {
     _id: string;
     name: string;
     email: string;
+    role:string
   } | UserSchema;
 }
 export interface ControllerFunction {

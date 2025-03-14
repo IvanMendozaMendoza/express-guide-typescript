@@ -21,6 +21,7 @@ const tourSchema = new mongoose.Schema(
       min: 1,
       required: [true, "a tour must have a max group size"],
     },
+    guides: [{ type: mongoose.Schema.ObjectId, ref: "User" }],
     duration: {
       type: Number,
       min: 3,
@@ -73,6 +74,30 @@ const tourSchema = new mongoose.Schema(
       },
     },
     startDates: [Date],
+    startLocation: {
+      type: {
+        type: String,
+        default: "Point",
+        enum: ["Point"],
+      },
+      coordinates: [Number],
+      address: String,
+      description: String,
+      day: Number,
+    },
+    locations: [
+      {
+        type: {
+          type: String,
+          default: "Point",
+          enum: ["Point"],
+        },
+        coordinates: [Number],
+        address: String,
+        description: String,
+        day: Number,
+      },
+    ],
   },
   {
     toJSON: { virtuals: true },
@@ -88,6 +113,21 @@ tourSchema.pre("save", function () {
   this.slug = slugify(this.name, { lower: true });
 });
 
+tourSchema.pre(/^find/, function (next) {
+  (this as mongoose.Query<any, any>).populate({
+    path: "guides",
+    select: "-__v -paswordChangedAt -confirmPassword",
+  });
+
+  next();
+});
+
+// tourSchema.pre("save", async function (next) {
+//   const guides = this.guides.map((id) => User.findById(id));
+
+//   this.guides = await Promise.all(guides);
+//   next();
+// });
 // tourSchema.pre(/^find/, function (this: Query<any, any>) {
 //   console.log(this.find());
 // });
